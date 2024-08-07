@@ -130,6 +130,8 @@ class OpenYolo3D():
         print("[🚀 ACTION] Predicting ...")
         start = time.time()
         prediction = self.label_3d_masks_from_2d_bboxes(scene_name, is_gt)
+        ### clear
+        torch.cuda.empty_cache()
         print(f"[🕒 INFO] Elapsed time {(time.time()-start)}")
         print(f"[✅ INFO] Prediction completed")    
             
@@ -368,7 +370,8 @@ class WORLD_2_CAM():
         return adapted_intrinsic
     
     def get_mesh_projections(self):
-        N_Large = 2000000*250
+        # N_Large = 2000000*250
+        N_Large = 200
         
         points, colors = self.load_ply(self.mesh)
         points, colors = torch.from_numpy(points).cuda(), torch.from_numpy(colors).cuda()
@@ -407,6 +410,7 @@ class WORLD_2_CAM():
         
         else:
             B_size = 200000
+            # B_size = 20000
             Num_Points = word2cam_mat.shape[1]
             Num_batches = Num_Points//B_size+1
             projected_points = []
@@ -424,7 +428,8 @@ class WORLD_2_CAM():
                             (torch.div(batch_y.reshape(size[0]*size[1])[mask],batch_z.reshape(size[0]*size[1])[mask])).reshape(size)]).permute(1,2,0).long()
                 projected_points.append(projected_points_i.cpu())
                 
-
+                ### clear cache
+                torch.cuda.empty_cache()
            
             # merge parts
             projected_points = torch.cat(projected_points, dim = 1)

@@ -1,0 +1,10 @@
+# ninja log v5
+2	18341	1719974914459094859	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/interpolate.o	d46aa364cde72552
+1	18564	1719974914683100730	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/bindings.o	5be9f3868ec4cf43
+0	19476	1719974915595124628	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/ball_query.o	3942b2c977f589
+2	19744	1719974915863131651	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/sampling.o	585256a9d14b5e17
+1	20760	1719974916883158378	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/group_points.o	5bf2061e7c30b21b
+1	51432	1719974947559961884	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/group_points_gpu.o	930a88c66306857c
+1	51744	1719974947863969843	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/ball_query_gpu.o	d3abb12a244c5717
+2	52630	1719974948751993094	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/interpolate_gpu.o	d281ce6a54dc43da
+2	54084	1719974950208031215	/home/tracyowo/OpenYOLO3D/OpenYOLO3D/models/Mask3D/third_party/pointnet2/build/temp.linux-x86_64-3.10/pointnet2/_ext_src/src/sampling_gpu.o	ca3b4a890e54b0bd

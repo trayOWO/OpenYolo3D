@@ -280,8 +280,12 @@ def make_pred_info(pred: dict):
     # pred = {'pred_scores' = 100, 'pred_classes' = 100 'pred_masks' = Nx100}
     pred_info = {}
     assert (pred['pred_classes'].shape[0] == pred['pred_scores'].shape[0] == pred['pred_masks'].shape[1])
+    print("pred: ")
+    print(pred)
     for i in range(len(pred['pred_classes'])):
         info = {}
+        print(f"PRED_ID_TO_IDL: {PRED_ID_TO_ID}")
+        print(f"pred_classes i: {pred['pred_classes'][i]}")
         info["label_id"] = PRED_ID_TO_ID[pred['pred_classes'][i]]
         info["conf"] = pred['pred_scores'][i]
         info["mask"] = pred['pred_masks'][:, i]

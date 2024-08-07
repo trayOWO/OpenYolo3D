@@ -1,6 +1,19 @@
-import os
+
 _base_ = (f'{os.getcwd()}/models/YOLO-World/third_party/mmyolo/configs/yolov8/'
           'yolov8_x_syncbn_fast_8xb16-500e_coco.py') 
+# _base_ = [
+#     './models/YOLO-World/third_party/mmyolo/configs/yolov8/yolov8_x_syncbn_fast_8xb16-500e_coco.py'
+# ]
+# from mmengine.config import Config, read_base
+
+# with read_base():
+#     _base_ = (f'{os.getcwd()}/models/YOLO-World/third_party/mmyolo/configs/yolov8/'
+#               'yolov8_x_syncbn_fast_8xb16-500e_coco.py')
+# from mmengine.config import read_base
+
+# with read_base():
+#     from mmengine.configs.yolov8.yolov8_x_syncbn_fast_8xb16_500e_coco import *
+              
 custom_imports = dict(imports=['yolo_world'],
                       allow_failed_imports=False)
 
