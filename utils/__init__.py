@@ -98,6 +98,7 @@ class OpenYolo3D():
         config = load_yaml(openyolo3d_config)
         self.network_3d = Network_3D(config)
         self.network_2d = Network_2D(config)
+        self.network_3dpoint = 
         self.openyolo3d_config = config
     
     def predict(self, path_2_scene_data, depth_scale, processed_scene = None, path_to_3d_masks = None, is_gt=False):
@@ -152,8 +153,10 @@ class OpenYolo3D():
         self.predicted_masks = predicted_masks
         self.predicated_scores = predicated_scores
         self.predicated_classes = predicated_classes
+        self.distribution_scores = distribution_scores
         
-        return {scene_name : (predicted_masks, predicated_classes, predicated_scores)}
+        # self.distribution_scores: 對所有label的score，shape: ([mask數量])，其中一個 [0]: ([class數量])
+        return {scene_name : (predicted_masks, predicated_classes, predicated_scores, distribution_scores)}
     
     
     def label_3d_masks_from_label_maps(self, 
