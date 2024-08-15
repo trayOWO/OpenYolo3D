@@ -134,7 +134,7 @@ class OpenYolo3D():
         torch.cuda.empty_cache()
         print(f"[🕒 INFO] Elapsed time {(time.time()-start)}")
         print(f"[✅ INFO] Prediction completed")    
-            
+
         return prediction
     
     def label_3d_masks_from_2d_bboxes(self, scene_name, is_gt=False):
@@ -142,11 +142,12 @@ class OpenYolo3D():
         predictions_2d_bboxes = self.preds_2d
         prediction_3d_masks, _ = self.preds_3d
         
-        predicted_masks, predicated_classes, predicated_scores = self.label_3d_masks_from_label_maps(prediction_3d_masks.bool(), 
+        predicted_masks, predicated_classes, predicated_scores, distribution_scores = self.label_3d_masks_from_label_maps(prediction_3d_masks.bool(), 
                                                                                                         predictions_2d_bboxes, 
                                                                                                         projections_mesh_to_frame,
                                                                                                         keep_visible_points, 
-                                                                                                        is_gt)
+                                                                                                        is_gt,
+                                                                                                        get_distribution=True)
         
         self.predicted_masks = predicted_masks
         self.predicated_scores = predicated_scores
@@ -160,7 +161,8 @@ class OpenYolo3D():
                                         predictions_2d_bboxes, 
                                         projections_mesh_to_frame, 
                                         keep_visible_points,
-                                        is_gt):
+                                        is_gt,
+                                        get_distribution=False):
         
         label_maps = self.construct_label_maps(predictions_2d_bboxes) #construct the label maps , start from the biggest bbox to small one
 
@@ -173,6 +175,8 @@ class OpenYolo3D():
         visibility_matrix = visibility_matrix[:, valid_frames].cpu().numpy()
         keep_visible_points = keep_visible_points[valid_frames].cpu().numpy()
         distributions = []
+        distribution_prob = []
+        pred_distribution_probs = []
         
         class_labels = []
         class_probs = []
@@ -201,10 +205,13 @@ class OpenYolo3D():
                 selected_labels = label_maps[representitive_frame_id, instance_x_y_coords[:, 1], instance_x_y_coords[:, 0]]
                 labels_distribution.append(selected_labels)
             
+            # print(f'labels_distribution len: {len(labels_distribution)}, [0] len: {len(labels_distribution[0])}')
             labels_distribution = np.concatenate(labels_distribution) if len(labels_distribution) > 0 else np.array([-1])
             
             # class_dists.append(labels_distribution)
             distribution = torch.zeros(self.openyolo3d_config["openyolo3d"]["num_classes"]) if self.openyolo3d_config["openyolo3d"]["topk_per_image"] != -1 else None
+            distribution_prob = torch.zeros_like(distribution) if distribution is not None else None
+            # print(f'distribution: {distribution}')
             if (labels_distribution != -1).sum() != 0:
                 
                 if distribution is not None:
@@ -212,11 +219,17 @@ class OpenYolo3D():
                     all_labels_unique = all_labels.unique()
                     for lb in all_labels_unique:
                         distribution[lb] = (all_labels == lb).sum()
-                        
+                        distribution_prob[lb] = (all_labels == lb).sum()/prob_normalizer
+
+                    # print(f'distribution: {distribution}')    
+                    # 照比例normalization -> 最大為1
                     distribution = distribution/distribution.max()
+                    # print(f'distribution: {distribution}')
+                    # distribution_prob = distribution / prob_normalizer
                 
                 class_label = torch.mode(torch.from_numpy(labels_distribution[labels_distribution != -1])).values.item()
                 class_prob = (labels_distribution == class_label).sum()/prob_normalizer
+
             else:
                 if distribution is not None:
                     distribution[-1] = 1.0
@@ -230,13 +243,29 @@ class OpenYolo3D():
                 iou_prob = iou_vals[iou_vals != 0].mean().item()
             else:
                 iou_prob = 0.0
+
+            # print(f'class_labels: {class_labels}')
             
             class_probs.append(class_prob*iou_prob)
+
+            # print(f'class_probs: {class_probs}')
             if distribution is not None:
                 distributions.append(distribution)
+                pred_distribution_probs.append(distribution_prob*iou_prob)
                 
         pred_classes = torch.tensor(class_labels)
         pred_scores = torch.tensor(class_probs)
+
+        print(f'distribution shape: {distribution.shape}')
+        print(f'distribution_prob shape: {distribution_prob.shape}')
+        print(f'pred_distribution_probs len: {len(pred_distribution_probs)}')
+        print(f'pred_distribution_probs [0] shape: {pred_distribution_probs[0].shape}')
+        print(f'pred_distribution_probs [0]: {pred_distribution_probs[0]}')
+
+        # print(f'distributions :{distributions}')
+        # print(f'pred_classes: {pred_classes.shape}, {pred_classes}')
+        # print(f'pred_scores shape: {pred_scores.shape}, {pred_scores}')
+
         if distribution is not None:
             distributions = torch.stack(distributions) if len(distributions) > 0 else torch.tensor((0, self.openyolo3d_config["openyolo3d"]["num_classes"]))
         
@@ -255,11 +284,23 @@ class OpenYolo3D():
             _, idx = torch.topk(distributions, k=min(cur_topk, len(distributions)), largest=True)
             mask_idx = torch.div(idx, self.openyolo3d_config["openyolo3d"]["num_classes"], rounding_mode="floor")
 
+        if self.openyolo3d_config["openyolo3d"]["do_topk_per_image"] != -1:
             pred_classes = labels[idx]
             pred_scores = distributions[idx].cuda()
             prediction_3d_masks = prediction_3d_masks[mask_idx]
+            # print(f'distributions :{distributions}')
+            # print(f'pred_classes shape: {pred_classes.shape}, {pred_classes}')
+            # print(f'pred_scores shape: {pred_scores.shape}, {pred_scores}')
         
-        return prediction_3d_masks.permute(1,0), pred_classes, pred_scores
+        if get_distribution and distribution is not None:
+            # print(f'pred_distributions len:{len(pred_distributions)}')
+            # print(f'pred_distribution_probs len:{len(pred_distribution_probs)}')
+            print(f'pred_classes: {pred_classes}')
+            print(f'pred_scores: {pred_scores}')
+            return prediction_3d_masks.permute(1,0), pred_classes, pred_scores, pred_distribution_probs
+        
+        else:
+            return prediction_3d_masks.permute(1,0), pred_classes, pred_scores
     
     def construct_label_maps(self, predictions_2d_bboxes, save_label_map=False):
         label_maps = (torch.ones((len(predictions_2d_bboxes), self.world2cam.height, self.world2cam.width))*-1).type(torch.int16)

@@ -3,7 +3,10 @@ openyolo3d:
   vis_depth_threshold: 0.4
   depth_scale: 6553.5
   topk: 40
-  topk_per_image: -1
+  # topk_per_image: -1
+  topk_per_image: 600
+  do_topk_per_image: -1
+  num_classes: 48
 
 network2d:
   text_prompts: ["basket", "bed", "bench", "bin", "blanket", "blinds", "book", "bottle", "box", "bowl", "camera", "cabinet", "candle", "chair", "clock", "cloth", "comforter", "cushion", "desk", "desk-organizer", "door", "indoor-plant", "lamp", "monitor", "nightstand", "panel", "picture", "pillar", "pillow", "pipe", "plant-stand", "plate", "pot", "sculpture", "shelf", "sofa", "stool", "switch", "table", "tablet", "tissue-paper", "tv-screen", "tv-stand", "vase", "vent", "wall-plug", "window", "rug"]
